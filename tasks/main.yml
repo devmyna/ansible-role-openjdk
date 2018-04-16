@@ -1,0 +1,29 @@
+---
+- name: Support RedHat only
+  failed_when: ansible_os_family != 'RedHat'
+
+- name: Include packege names fro RedHat
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Install java for RedHat
+  yum: name={{ java_packages }} state=present
+  with_items: "{{ java_packages }}"
+  when: ansible_os_family == 'RedHat'
+
+- name: Get the installed java path for RedHat
+  shell: "update-alternatives --display java | grep '^/' | awk '{print $1}' | grep 1.8.0"
+  register: java_path
+  when: ansible_os_family == 'RedHat'
+
+- name: Correct java version selected
+  alternatives:
+    name: java
+    path: "{{ java_path.stdout }}"
+    link: /usr/bin/java
+  when: ansible_os_family == 'RedHat'
+
+- name: Set env
+  template:
+    src: java_env.sh.j2
+    dest: /etc/profile.d/java_env.sh
+    mode: 0644

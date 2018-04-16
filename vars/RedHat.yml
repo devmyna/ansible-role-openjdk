@@ -1,0 +1,2 @@
+java_package: "{{ app_java | default('java-1.8.0-openjdk.x86_64') }}"
+java_home: /usr/java/default/
